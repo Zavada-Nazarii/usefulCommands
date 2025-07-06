@@ -38,7 +38,7 @@ cat file.json | jq 'select(tostring | test("mail"))'
 cat file.json | jq '.. | select(type == "string" and test("mail"))'
 ```
 
-### Якщо потрібно знайти всі рядки з `title` (без title, лише значення і передами рядками через кому):
+### Якщо потрібно знайти всі рядки з `title` (включно із значенням і передами рядками через кому):
 
 ```bash
 cat file.json | jq -r '.. | objects | .title? // empty' | sed 's/$/,/'
