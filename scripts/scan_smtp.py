@@ -2,18 +2,16 @@
 
 import argparse
 import subprocess
+import socket
 import smtplib
 import ssl
-import socket
 from datetime import datetime
 import shutil
 
 RESULTS_FILE = f"smtp_scan_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 PORTS = [25, 465, 587]
 
-# Шаблони swaks
 SWAKS_OPEN_RELAY = ["swaks", "--to", "test@external.com", "--from", "test@victim.local", "--server", "{ip}", "--port", "{port}", "--timeout", "8"]
-SWAKS_AUTH_TEST = ["swaks", "--auth", "LOGIN", "--auth-user", "test", "--auth-password", "test", "--server", "{ip}", "--port", "{port}", "--timeout", "8"]
 
 def log_result(output: str):
     with open(RESULTS_FILE, "a") as f:
@@ -30,24 +28,40 @@ def test_banner(ip: str, port: int):
     except Exception as e:
         log_result(f"[BANNER] {ip}:{port} -> ERROR: {e}")
 
-def run_swaks(command_template, ip: str, port: int, label: str):
+def run_swaks_open_relay(ip: str, port: int):
     if not shutil.which("swaks"):
-        log_result(f"[{label}] ERROR: swaks not found in PATH.")
+        log_result(f"[SWAKS OPEN RELAY] {ip}:{port} -> ERROR: swaks not found")
         return
     try:
-        cmd = [arg.format(ip=ip, port=str(port)) for arg in command_template]
+        cmd = [arg.format(ip=ip, port=str(port)) for arg in SWAKS_OPEN_RELAY]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-        log_result(f"[{label}] {ip}:{port}\n{result.stdout}")
+        log_result(f"[SWAKS OPEN RELAY] {ip}:{port}\n{result.stdout}")
     except subprocess.TimeoutExpired:
-        log_result(f"[{label}] {ip}:{port} -> TIMEOUT")
+        log_result(f"[SWAKS OPEN RELAY] {ip}:{port} -> TIMEOUT")
     except Exception as e:
-        log_result(f"[{label}] {ip}:{port} -> ERROR: {e}")
+        log_result(f"[SWAKS OPEN RELAY] {ip}:{port} -> ERROR: {e}")
 
-def test_swaks_open_relay(ip: str, port: int):
-    run_swaks(SWAKS_OPEN_RELAY, ip, port, "SWAKS OPEN RELAY")
+def test_auth_smtplib(ip: str, port: int):
+    log_result(f"[AUTH TEST] Starting AUTH LOGIN test for {ip}:{port}")
+    try:
+        if port == 465:
+            context = ssl.create_default_context()
+            server = smtplib.SMTP_SSL(ip, port, timeout=10, context=context)
+            server.ehlo()
+        else:
+            server = smtplib.SMTP(ip, port, timeout=10)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
 
-def test_swaks_auth(ip: str, port: int):
-    run_swaks(SWAKS_AUTH_TEST, ip, port, "SWAKS AUTH TEST")
+        # Dummy auth attempt
+        server.login("test", "test")
+        log_result(f"[AUTH TEST] {ip}:{port} -> AUTH LOGIN accepted (unexpected!)")
+        server.quit()
+    except smtplib.SMTPAuthenticationError:
+        log_result(f"[AUTH TEST] {ip}:{port} -> AUTH LOGIN rejected (as expected)")
+    except Exception as e:
+        log_result(f"[AUTH TEST] {ip}:{port} -> ERROR: {e}")
 
 def test_ssl(ip: str, port: int):
     try:
@@ -55,7 +69,7 @@ def test_ssl(ip: str, port: int):
         with socket.create_connection((ip, port), timeout=5) as sock:
             with context.wrap_socket(sock, server_hostname=ip) as ssock:
                 cert = ssock.getpeercert()
-                result = f"[SSL] {ip}:{port} -> SSL/TLS CERT: {cert.get('subject')}"
+                result = f"[SSL] {ip}:{port} -> SSL/TLS CERT SUBJECT: {cert.get('subject')}"
                 log_result(result)
     except Exception as e:
         log_result(f"[SSL] {ip}:{port} -> ERROR: {e}")
@@ -63,13 +77,13 @@ def test_ssl(ip: str, port: int):
 def run_all_tests(ip: str):
     for port in PORTS:
         test_banner(ip, port)
-        test_swaks_open_relay(ip, port)
-        test_swaks_auth(ip, port)
+        run_swaks_open_relay(ip, port)
+        test_auth_smtplib(ip, port)
         if port in [465, 587]:
             test_ssl(ip, port)
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="SMTP Security Scanner")
+    parser = argparse.ArgumentParser(description="SMTP Security Scanner with AUTH and TLS")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-u", "--url", help="Target IP or hostname")
     group.add_argument("-f", "--file", help="File with list of IPs/domains")
