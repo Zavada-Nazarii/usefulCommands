@@ -9,7 +9,12 @@
 Визначити, чи має користувач можливість виконання `COPY FROM PROGRAM`, що відкриває вектор до RCE.
 
 ---
+## ✅ Підключення PostgreSQL
 
+psql -h hostname/ip -p 6543 -U postgres -d database
+
+
+---
 ## ✅ Перевірка версії PostgreSQL
 
 ```sql
