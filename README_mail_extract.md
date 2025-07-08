@@ -68,6 +68,14 @@ sed -n 's/.*"\(mail[^"]*\)".*/\1/p' file.json
 
 ---
 
+### Варіант для grep з фільтрацією тільки FQDN:
+
+```bash
+grep -Ei '(^|\.)(mail|smtp|imap|pop|mx|owa|webmail|email|mta|exch|exchange|autodiscover|zimbra|rcube|roundcube|ews)([0-9]*)(\-)?(\.|$)' urls.txt | grep -E '\.[a-z]{2,}$'
+
+```
+
+---
 ## 🛠 Зауваження
 
 - Якщо `jq` не встановлено:
