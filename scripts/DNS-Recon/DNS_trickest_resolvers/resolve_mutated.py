@@ -7,7 +7,8 @@ from collections import defaultdict
 
 # === Конфігурація ===
 SCRIPT_DIR = Path(__file__).resolve().parent
-INPUT_DIR = SCRIPT_DIR / "/media/n.zavada/BigFlesh/RedTeam/Recon/alterex"  # 📁 зміни на свою директорію
+INPUT_DIR = Path("alterex")
+CRUNCH_DIR = Path("crunch")
 RESOLVERS_URL = "https://raw.githubusercontent.com/trickest/resolvers/main/resolvers.txt"
 RESOLVERS_FILE = SCRIPT_DIR / "resolvers.txt"
 OUTPUT_BASE = SCRIPT_DIR / "domain-resolved"
@@ -15,7 +16,8 @@ OUTPUT_BASE = SCRIPT_DIR / "domain-resolved"
 FILE_TYPES = {
     "standard": "alterx_standard_{}.txt",
     "custom": "alterx_custom_{}.txt",
-    "combined": "alterx_combined_{}.txt"
+    "combined": "alterx_combined_{}.txt",
+    "crunch": "crunch_generated_{}.txt"
 }
 
 DNSX_CMD = "dnsx"
@@ -70,10 +72,10 @@ def resolve_file(domain, type_name, input_path):
     return count
 
 def find_domains():
-    all_files = list(INPUT_DIR.glob("alterx_*_*.txt"))
+    all_files = list(INPUT_DIR.glob("alterx_*_*.txt")) + list(CRUNCH_DIR.glob("crunch_generated_*.txt"))
     domain_set = set()
 
-    pattern = re.compile(r"alterx_(?:standard|custom|combined)_(.+)\.txt")
+    pattern = re.compile(r"(?:alterx_(?:standard|custom|combined)|crunch_generated)_(.+)\.txt")
     for f in all_files:
         match = pattern.match(f.name)
         if match:
@@ -83,20 +85,19 @@ def find_domains():
 
 def main():
     download_resolvers()
-    if not INPUT_DIR.exists():
-        print(f"[!] ❌ Вхідна папка {INPUT_DIR} не існує.")
-        return
-
     stats = defaultdict(dict)
+
     domains = find_domains()
     if not domains:
-        print("[!] ❌ Не знайдено жодного alterx-файлу для обробки.")
-        return
+        print("[!] ⚠️ Увага: не знайдено жодного файлу, але скрипт продовжує роботу.")
+    else:
+        print(f"[i] Знайдено {len(domains)} домен(ів) для обробки.")
 
     for domain in domains:
         print(f"\n=== 🔍 ДОМЕН: {domain} ===")
         for type_name, filename_pattern in FILE_TYPES.items():
-            input_path = INPUT_DIR / filename_pattern.format(domain)
+            folder = CRUNCH_DIR if type_name == "crunch" else INPUT_DIR
+            input_path = folder / filename_pattern.format(domain)
             if input_path.exists() and input_path.stat().st_size > 0:
                 count = resolve_file(domain, type_name, input_path)
                 stats[domain][type_name] = count
@@ -104,15 +105,18 @@ def main():
                 print(f"[!] Пропускаю {type_name}: файл не знайдено або порожній.")
 
     # === ПІДСУМОК ===
-    print("\n📊 === ПІДСУМКОВА СТАТИСТИКА ===")
-    for domain in domains:
-        total = 0
-        print(f"\n{domain}:")
-        for t in FILE_TYPES:
-            count = stats[domain].get(t, 0)
-            total += count
-            print(f"  └─ {t:8s}: {count}")
-        print(f"  ▶️ Всього: {total}")
+    if stats:
+        print("\n📊 === ПІДСУМКОВА СТАТИСТИКА ===")
+        for domain in domains:
+            total = 0
+            print(f"\n{domain}:")
+            for t in FILE_TYPES:
+                count = stats[domain].get(t, 0)
+                total += count
+                print(f"  └─ {t:8s}: {count}")
+            print(f"  ▶️ Всього: {total}")
+    else:
+        print("[i] Підсумкова статистика відсутня — не було оброблено жодного файлу.")
 
 if __name__ == "__main__":
     main()
