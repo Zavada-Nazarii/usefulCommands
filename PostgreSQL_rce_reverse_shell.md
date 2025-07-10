@@ -10,9 +10,9 @@
 
 ---
 ## ✅ Підключення PostgreSQL
-
+```sql
 psql -h hostname/ip -p 6543 -U postgres -d database
-
+```
 
 ---
 ## ✅ Перевірка версії PostgreSQL
