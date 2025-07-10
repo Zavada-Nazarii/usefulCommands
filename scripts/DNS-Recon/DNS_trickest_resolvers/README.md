@@ -2,7 +2,7 @@
 
 Цей проєкт реалізує повноцінний пайплайн для DNS-пермутацій, валідації та резолвінгу сабдоменів з використанням `alterx`, `subfinder`, `dnsx`, та `trickest/resolvers`.
 
-ЗАпускати після [alterx](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/scripts/alterx/README.md)
+ЗАпускати після [alterx](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/DNS-Recon/alterx)
 
 ---
 

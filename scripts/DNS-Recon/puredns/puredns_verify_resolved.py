@@ -2,9 +2,9 @@ import subprocess
 from pathlib import Path
 
 # === Налаштування ===
-INPUT_DIR = Path("/media/n.zavada/BigFlesh/RedTeam/Recon/dns_resolvers/domain-resolved")
+INPUT_DIR = Path("domain-resolved")
 OUTPUT_DIR = Path("domain-verified")
-RESOLVERS_FILE = Path("/media/n.zavada/BigFlesh/RedTeam/Recon/dns_resolvers/resolvers.txt")  # Змінити шлях, якщо потрібно
+RESOLVERS_FILE = Path("resolvers.txt")  # Змінити шлях, якщо потрібно
 
 # === Підготовка ===
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

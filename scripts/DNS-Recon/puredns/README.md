@@ -2,7 +2,7 @@
 
 Цей репозиторій/папка містить інструменти для **точної валідації сабдоменів** після генерації/ресолвінгу з використанням `puredns`.
 
-ЗАпускати після [dnsx](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/DNS_trickest_resolvers)
+ЗАпускати після [dnsx](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/DNS-Recon/DNS_trickest_resolvers)
 
 ---
 
