@@ -42,14 +42,19 @@ def save_to_file(lines, filepath):
 
 def run_shuffledns(input_file, output_file):
     cmd = (
-        f"shuffledns -list {input_file} "
+        f"shuffledns "
+        f"-list {input_file} "
         f"-r {RESOLVERS_FILE} "
         f"-o {output_file} "
-        f"-silent -sw -duc"
+        f"-silent "
+        f"-sw "
+        f"-duc "
+        f"-mode resolve"
     )
     print("[*] Валідація доменів через shuffledns...")
     subprocess.run(cmd, shell=True, check=True)
     print(f"[+] Результати збережено в: {output_file}")
+
 
 def main():
     download_resolvers()
