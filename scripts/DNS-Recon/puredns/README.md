@@ -2,15 +2,13 @@
 
 Цей репозиторій/папка містить інструменти для **точної валідації сабдоменів** після генерації/ресолвінгу з використанням `puredns`.
 
-ЗАпускати після [dnsx](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/DNS-Recon/DNS_trickest_resolvers)
+Запускати після [dnsx](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/DNS-Recon/DNS_trickest_resolvers)
 
 ---
 
 ## 🔧 Необхідні інструменти
 
 ### 1. Встановлення `massdns`
-
-`puredns` використовує `massdns` для високошвидкісного DNS-резолвінгу:
 
 ```bash
 git clone https://github.com/blechschmidt/massdns.git
@@ -26,6 +24,7 @@ go install github.com/d3mondev/puredns/v2@latest
 ```
 
 Перевірка:
+
 ```bash
 puredns --help
 ```
@@ -36,14 +35,13 @@ puredns --help
 
 ```
 .
-├── domain-resolved/                # Вхідні результати (від alterx/dnsx)
+├── domain-resolved/                # Вхідні результати (dnsx/alterx)
 │   ├── standard/
 │   ├── custom/
 │   └── combined/
 │       └── example.com_resolved.txt
-├── domain-verified/                # Вихідні перевірені дані
-│   └── ...
-├── resolvers.txt                   # Список DNS-релолверів
+├── domain-verified/                # Вихідні перевірені сабдомени
+├── resolvers.txt                   # Список DNS-резолверів
 ├── puredns_verify_recursive.py     # Скрипт валідації
 ```
 
@@ -52,31 +50,105 @@ puredns --help
 ## 🚀 Запуск валідації
 
 ```bash
-python3 puredns_verify_recursive.py
+python3 puredns_verify_recursive.py           # через resolvers.txt
+python3 puredns_verify_recursive.py --local   # через локальний DNS (127.0.0.1)
 ```
 
-Цей скрипт:
-- сканує всі `*_resolved.txt` файли в `domain-resolved/**`
-- перевіряє через `puredns`
-- створює `*_verified.txt` в `domain-verified/**`
-
-> ⚠️ Вимагає файл `resolvers.txt` з валідними DNS (1 на рядок, напр. `1.1.1.1`)
+> Вибір `--local` дозволяє резолвити потужно і без rate-limit/блокувань
 
 ---
 
-## 🧠 Взаємодія з іншими інструментами
+## 🪠 Чому варто використовувати локальний DNS (Unbound)
 
-### 📍 `dnsx` — масовий фільтр
+| Перевага              | Пояснення                                  |
+| --------------------- | ------------------------------------------ |
+| 🚀 Швидкість          | Кеш, місцевий рекурсивний DNS              |
+| 🚫 Ніяких rate-limit  | Ні VPS cloud, ні Google DNS тебе не забанять |
+| 🔐 Більша точність    | Відсутні wildcard-відповіді від CDN        |
+| 🌐 DNSSEC/Prefetching | Можна контролювати TTL/кеш/сервери         |
 
-- Використовується для попереднього фільтрування великих словників
-- Дає швидкий `A/AAAA`-результат, але **може включати wildcard-и**
-- Підходить для грубого скорочення словника
+---
 
-### 🧪 `puredns` — точна валідація
+## 🔨 Встановлення Unbound DNS
 
-- Виявляє wildcard-домени
-- Видаляє false-positives
-- Дає **еталонний набір живих сабдоменів**
+```bash
+sudo apt update && sudo apt install unbound -y
+```
+
+### Створити root hints
+
+```bash
+sudo curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
+```
+
+### Створити конфіг `/etc/unbound/unbound.conf`
+
+```conf
+server:
+  verbosity: 1
+  interface: 127.0.0.1
+  access-control: 127.0.0.1/8 allow
+
+  # Продуктивність
+  num-threads: 4
+  msg-cache-size: 100m
+  rrset-cache-size: 100m
+  cache-min-ttl: 300
+  cache-max-ttl: 86400
+  prefetch: yes
+  prefetch-key: yes
+
+  # IPv6 можна вимкнути, якщо не потрібен
+  do-ip6: no
+
+  # Обмеження
+  do-not-query-localhost: no
+
+  # Збільшення лімітів
+  outgoing-range: 8192
+  num-queries-per-thread: 4096
+  so-rcvbuf: 4m
+  so-sndbuf: 4m
+
+  # Рекурсія напряму до root DNS
+  harden-glue: yes
+  harden-dnssec-stripped: yes
+  unwanted-reply-threshold: 10000000
+  module-config: "iterator"
+# Root hints (авторитетні root-сервери)
+root-hints: "/var/lib/unbound/root.hints"
+```
+
+### Перевірка і запуск
+
+```bash
+sudo unbound-checkconf
+sudo systemctl restart unbound
+```
+
+### Тест DNS
+
+```bash
+dig example.com @127.0.0.1 +short
+```
+
+---
+
+## 🧪 Типові проблеми
+
+- `trust anchor presented twice` — вимкни DNSSEC або знову згенеруй root.key
+- `--bin` не працює — сучасні версії puredns його видалили
+- "cloud VPS" буває блокує DNS за 8.8.8.8 — локальний днс це байпас
+
+---
+
+## 🪜 Порядок дій
+
+1. Встанови Unbound
+2. Створи root.hints
+3. Вставь конфіг (module-config: "iterator")
+4. `dig example.com @127.0.0.1`
+5. `python3 puredns_verify_recursive.py --local`
 
 ---
 
@@ -115,3 +187,4 @@ puredns resolve domain-resolved/standard/example.com_resolved.txt \
 puredns resolve test.txt --resolvers resolvers.txt --write /dev/null
 ```
 ---
+
