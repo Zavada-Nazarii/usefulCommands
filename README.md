@@ -6,7 +6,8 @@
 
 ### 1. 🎯 Reverse Shell (Metasploit, Msfvenom)
 Файл містить приклади генерації та запуску реверс шелу за допомогою Metasploit Framework.
-- [`reverse_shell_msf.txt`](reverse_shell_msf.txt)
+- [`msfvenom_commands`](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/msfvenom_commands_uk.md)
+- [`meterpreter_commands`](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/meterpreter_commands_uk.md)
 
 ### 2. 🐍 Reverse Shell
 Створення реверс в не зовсім типових місцях.
