@@ -18,9 +18,10 @@
 Команди та скрипти для ексфільтрації даних через різні протоколи (HTTP, DNS, FTP, ICMP).
 - [`exfiltration_methods`](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/exfiltration_cheatsheet.md)
 
-### 4. 🚀 Ffuf (Content Discovery)
+### 4. 🚀 ffuf (Content Discovery) та інші інструменти частого використання
 Типові команди для fuzzing веб-додатків за допомогою `ffuf`.
 - [`ffuf_cheatsheet`](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/ffuf_commands_uk.md)
+- [`tmux`](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/tmux_README.md)
 
 ### 5. 🔍 Аналіз логів Linux
 Команди для перегляду активності користувачів, процесів та підозрілих дій у Linux.
