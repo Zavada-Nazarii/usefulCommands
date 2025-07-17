@@ -46,10 +46,17 @@ python3 generate_crunch_lists.py
 - `crunch`
 - Python 3.x
 - Файл `/usr/share/crunch/charset.lst` (типовий набір символів crunch)
-
+- Список на 1-4 символи
+```
+crunch 1 4 -f crunch-charset.lst lalpha-numeric-dash -o /usr/local/share/crunch/crunch_1_4_lalpha-numeric-dash.txt
+```
+- Список на 5-5 символи
+```
+crunch 5 5 -f crunch-charset.lst lalpha -o /usr/local/share/crunch/crunch_5_5_lalpha.txt
+```
 ---
 
-## ⚙️ Що робить скрипт
+## ⚙️ Що робить скрипт generate_crunch_lists.py
 
 1. Читає список доменів із `domains.txt`.
 2. Для кожного шаблону (визначено в `CRUNCH_TASKS`) запускає crunch.
@@ -58,14 +65,11 @@ python3 generate_crunch_lists.py
 
 ---
 
-## 📂 Структура файлів
+## ⚙️ Що робить скрипт crunch_brute_1_4.py
 
-```
-.
-├── crunch_subgen.py
-├── domains.txt
-├── crunch-generated/
-│   ├── crunch_generated_example.com.txt
-│   └── ...
-```
+1. Читає список доменів із `domains.txt`.
+2. Для кожного шаблону (визначено в `CRUNCH_TASKS`) запускає crunch.
+3. Брутфорсить усі домени із префіксом crunch_1_4_lalpha-numeric-dash.txt або crunch_5_5_lalpha.txt.
+4. Результат зберігається у `crunch-generated/crunch_generated_1_4_<домен>.txt`.
+
 ---
