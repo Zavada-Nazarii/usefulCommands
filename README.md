@@ -31,6 +31,7 @@
 Файл містить приклади SMTP-взаємодії, розвідки через VRFY/EXPN, та спроб фішингових взаємодій.
 - [`smtp_attack_tips`](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/SMTP_Pentesting_README.md)
 - [`grep_json`](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/README_mail_extract.md)
+- [RedTeam_SecureListener](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/RedTeam_SecureListener.md)
 
 ### 7. ✉️ scripts
 Автоматизовані власні інструменти-збірки
