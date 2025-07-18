@@ -131,7 +131,7 @@ set ReverseListenerBindAddress 127.0.0.1
 
 `set ReverseListenerBindAddress 127.0.0.1` означає, що слухач буде прив'язаний до локального інтерфейсу зворотного зв'язку (localhost) вашої машини. Тобто, Metasploit буде чекати з'єднань лише від самої себе.
 
-## <a name="6"></a>7. Проксі + захист:
+## <a name="7"></a>7. Проксі + захист
 
 ```bash
 socat TCP4-LISTEN:4444,fork TCP4:127.0.0.1:4444
