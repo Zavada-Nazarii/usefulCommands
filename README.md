@@ -41,6 +41,7 @@
 - [smtp](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/smtp)
 - [Nuclei_DefectDojo](https://github.com/Zavada-Nazarii/Nuclei_DefectDojo)
 - [Nmap_DefectDojo](https://github.com/Zavada-Nazarii/Nmap_DefectDojo)
+- [QR](https://github.com/Zavada-Nazarii/QR)
 
 ### 7. ✉️ install
 Встановлення всяких інструментів
