@@ -14,6 +14,7 @@
 - [reverse_shell_python](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/python_attack_vectors_uk.md)
 - [PostgreSQL](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/PostgreSQL_rce_reverse_shell.md)
 - [Plague PAM Backdoor](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/plague_pam_backdoor_analysis.md)
+- [Docker Socket Escape](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/docker_escape.md)
 
 ### 3. 📤 Ексфільтрація даних
 Команди та скрипти для ексфільтрації даних через різні протоколи (HTTP, DNS, FTP, ICMP).
