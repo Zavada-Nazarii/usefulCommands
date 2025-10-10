@@ -24,6 +24,7 @@
 Типові команди для fuzzing веб-додатків за допомогою ffuf.
 - [ffuf_cheatsheet](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/ffuf_commands_uk.md)
 - [tmux](https://github.com/Zavada-Nazarii/usefulCommands/blob/master/tmux_README.md)
+- [adb]https://github.com/Zavada-Nazarii/usefulCommands/blob/master/adb_commands.md)
 
 ### 5. 🔍 Аналіз логів Linux
 Команди для перегляду активності користувачів, процесів та підозрілих дій у Linux.
