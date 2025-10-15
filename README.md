@@ -41,6 +41,7 @@
 ### 7. ✉️ scripts
 Автоматизовані власні інструменти-збірки
 - [DNS-Recon](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/DNS-Recon)
+- [Reverse-DNS-Recon](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/DNS-Recon/reverse_dns_lookup.py)
 - [smtp](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts/smtp)
 - [Nuclei_DefectDojo](https://github.com/Zavada-Nazarii/Nuclei_DefectDojo)
 - [Nmap_DefectDojo](https://github.com/Zavada-Nazarii/Nmap_DefectDojo)
