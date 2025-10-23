@@ -13,7 +13,16 @@ import shutil
 import os
 
 PORTS = [25, 465, 587, 110, 995, 143, 993]
-SWAKS_OPEN_RELAY = ["swaks", "--to", "test@external.com", "--from", "test@victim.local", "--server", "{ip}", "--port", "{port}", "--timeout", "8"]
+SWAKS_OPEN_RELAY = [
+    "swaks",
+    "--to", "{rcpt}",
+    "--from", "{sender}",
+    "--server", "{ip}",
+    "--port", "{port}",
+    "--timeout", "8",
+]
+SWAKS_TLS_FLAG = ["--tls"]
+SWAKS_TLS_ON_CONNECT_FLAG = ["--tls-on-connect"]
 
 DEBUG = False
 
@@ -59,16 +68,63 @@ def test_banner(ip: str, port: int, log_file: str):
     except Exception as e:
         log_result(f"[BANNER] {ip}:{port} -> ERROR: {e}", log_file)
 
-def run_swaks_open_relay(ip: str, port: int, log_file: str):
+def _classify_swaks_output(output: str) -> str:
+    text = output.lower()
+    if "must issue a starttls command first" in text:
+        return "STARTTLS потрібен для перевірки"
+    if "relay access denied" in text or "relay not permitted" in text:
+        return "Релей заборонено (relay access denied)"
+    if "recipient address rejected" in text or "5.1.1" in text:
+        return "Релей заблоковано (отримувач відхилений)"
+    if "530 5.7.0" in text:
+        return "Релей заблоковано (530 5.7.0)"
+    if "250 2.0.0" in text or "250 2.1.5" in text:
+        return "Можливий відкритий релей! Перевірте журнал нижче"
+    return "Результат потребує ручної перевірки"
+
+def run_swaks_open_relay(ip: str, port: int, log_file: str, sender: str, rcpt: str):
     debug_print(f"Testing open relay on {ip}:{port}")
     if not shutil.which("swaks"):
         log_result(f"[SWAKS OPEN RELAY] {ip}:{port} -> ERROR: swaks not found", log_file)
         return
-    try:
-        cmd = [arg.format(ip=ip, port=str(port)) for arg in SWAKS_OPEN_RELAY]
+    def _run_swaks(extra_flags=None):
+        args = list(SWAKS_OPEN_RELAY)
+        if extra_flags:
+            args.extend(extra_flags)
+        cmd = [arg.format(ip=ip, port=str(port), sender=sender, rcpt=rcpt) for arg in args]
         debug_print(f"Running command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-        log_result(f"[SWAKS OPEN RELAY] {ip}:{port}\n{result.stdout}", log_file)
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+
+    try:
+        extra_flags = []
+        used_tls = False
+        if port == 465:
+            extra_flags = SWAKS_TLS_ON_CONNECT_FLAG
+            used_tls = True
+        result = _run_swaks(extra_flags)
+        combined = (result.stdout or "") + ("\n" + result.stderr if result.stderr else "")
+        summary = _classify_swaks_output(combined)
+
+        if ("must issue a starttls command first" in combined.lower()) and not used_tls:
+            log_result(f"[SWAKS OPEN RELAY] {ip}:{port} -> Сервер вимагає STARTTLS, повторюємо з TLS.", log_file)
+            result = _run_swaks(SWAKS_TLS_FLAG)
+            combined = (result.stdout or "") + ("\n" + result.stderr if result.stderr else "")
+            summary = _classify_swaks_output(combined)
+            used_tls = True
+
+        log_lines = [
+            f"[SWAKS OPEN RELAY] {ip}:{port}",
+            f"  Відправник: {sender}",
+            f"  Отримувач: {rcpt}",
+            f"  Підсумок: {summary}",
+            "",
+            result.stdout.strip() if result.stdout else "(stdout порожній)",
+        ]
+        if result.stderr:
+            log_lines.append("")
+            log_lines.append("stderr:")
+            log_lines.append(result.stderr.strip())
+        log_result("\n".join(log_lines), log_file)
     except subprocess.TimeoutExpired:
         log_result(f"[SWAKS OPEN RELAY] {ip}:{port} -> TIMEOUT", log_file)
     except Exception as e:
@@ -129,11 +185,11 @@ def test_imap(ip: str, port: int, log_file: str):
     except Exception as e:
         log_result(f"[IMAP] {ip}:{port} -> ERROR: {e}", log_file)
 
-def run_all_tests(ip: str, log_file: str):
+def run_all_tests(ip: str, log_file: str, relay_sender: str, relay_recipient: str):
     for port in PORTS:
         test_banner(ip, port, log_file)
         if port in [25, 465, 587]:
-            run_swaks_open_relay(ip, port, log_file)
+            run_swaks_open_relay(ip, port, log_file, relay_sender, relay_recipient)
             test_auth_smtp(ip, port, log_file)
         elif port in [110, 995]:
             test_pop3(ip, port, log_file)
@@ -146,6 +202,8 @@ def parse_args():
     group.add_argument("-d", "--domain", help="Base domain or full URL")
     group.add_argument("-f", "--file", help="File with list of domains or URLs")
     parser.add_argument("--debug", action="store_true", help="Enable debug output")
+    parser.add_argument("--relay-from", default="test@victim.local", help="MAIL FROM адреса для open relay тесту (default: test@victim.local)")
+    parser.add_argument("--relay-to", default="test@external.com", help="RCPT TO адреса для open relay тесту (default: test@external.com)")
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -168,5 +226,5 @@ if __name__ == "__main__":
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             log_file = f"smtp_email_scan_{safe_name}_{timestamp}.txt"
             log_result(f"STARTING SCAN FOR: {target}", log_file)
-            run_all_tests(target, log_file)
+            run_all_tests(target, log_file, args.relay_from, args.relay_to)
             log_result(f"FINISHED SCAN FOR: {target}", log_file)
