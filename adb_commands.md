@@ -339,10 +339,15 @@ adb logcat -s "com.example.app"   # або загальний adb logcat
 Фільтруй по тегам (наприклад `DEV_PIN`, `BankActivity`) для швидкого пошуку.
 ---
 
-### Завантаження додатку .apk
+## Завантаження додатку .apk
 Потрібно спочатку дізнатись шлях до APK, а потім витягнути файл:
 
-  adb shell pm path com.example.app
-  adb pull /data/app/~~XYZ/base.apk ./com.example.app.apk
+```bash
+adb shell pm path com.example.app
+```
+
+```bash
+adb pull /data/app/~~XYZ/base.apk ./com.example.app.apk
+```
 
 ---
