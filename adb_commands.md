@@ -350,4 +350,12 @@ adb shell pm path com.example.app
 adb pull /data/app/~~XYZ/base.apk ./com.example.app.apk
 ```
 
+## Перевірка на data-кабель
+
+Зайти у Download Mode і ввести, при підключеному телефоні до машини.
+
+```
+sudo heimdall download-pit --output test.pit
+```
+
 ---
